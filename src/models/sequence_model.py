@@ -8,5 +8,5 @@ class SequenceModel(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, bidirectional=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out, _ = self.lstm(x)  # (T,B,input) -> (T,B,2*hidden)
+        out, _ = self.lstm(x)
         return out
