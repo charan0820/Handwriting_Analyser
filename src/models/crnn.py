@@ -19,10 +19,3 @@ class CRNN(nn.Module):
 
 def build_crnn(num_classes: int, cnn_channels: list[int] = None, hidden_size: int = 256) -> nn.Module:
     return CRNN(num_classes, cnn_channels, hidden_size)
-
-
-if __name__ == "__main__":
-    m = build_crnn(68)
-    out = m(torch.randn(4, 1, 64, 256))
-    assert out.shape == (64, 4, 68)
-    print("OK", out.shape)
