@@ -6,7 +6,13 @@ TARGET_W, TARGET_H = 256, 64
 
 def preprocess_image(image) -> np.ndarray:
     """Accepts a PIL.Image or np.ndarray. Returns float32 array (H=64,W=256,1) in [0,1]."""
-    if isinstance(image, np.ndarray):
+    if isinstance(image, str):
+        image = Image.open(image)
+    elif isinstance(image, np.ndarray):
+        if image.ndim == 3 and image.shape[2] == 1:
+            image = image.squeeze(2)
+        if np.issubdtype(image.dtype, np.floating) and image.max() <= 1.0:
+            image = (image * 255).astype(np.uint8)
         image = Image.fromarray(image)
     image = image.convert("L")  # grayscale
 

@@ -4,6 +4,8 @@ from PIL import Image
 
 def augment_image(image: np.ndarray, seed=None) -> np.ndarray:
     """Takes (H,W,1) float32 [0,1] array, applies light rotation/brightness, returns same shape."""
+    if image.ndim == 2:
+        image = image[..., np.newaxis]
     rng = np.random.RandomState(seed)
     h, w = image.shape[:2]
 

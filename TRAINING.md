@@ -1,19 +1,29 @@
 # Dataset
 
-Use the **IAM Handwriting Database** (English, line-level, ~13,000 labeled line
-images). Free registration required: https://fki.tic.heia-fr.ch/databases/iam-handwriting-database
+We use the line-level **IAM Handwriting Database**.
 
-Download the `lines` package. Place it so the structure matches:
+### Option A: Automatic Download via Hugging Face (`Teklia/IAM-line`) — Recommended
+You can download the dataset directly without registration using the built-in downloader script:
+
+```bash
+# Full dataset download (~265 MB, ~10,300 line images across train/val/test)
+python -m src.data.download_dataset
+
+# Quick download for smoke testing (e.g., 200 samples per split)
+python -m src.data.download_dataset --sample-limit 200
 ```
-data/raw/iam/
+
+### Option B: Official IAM Manual Download
+Download the official `lines` package from: https://fki.tic.heia-fr.ch/databases/iam-handwriting-database
+Place it so the structure matches:
+```
+data/raw/
 ├── lines.txt        # annotations, IAM format
 └── lines/
     ├── a01-000u-00.png
-    ├── a01-000u-01.png
     └── ...
 ```
-`load_dataset()` parses `lines.txt` directly (space-separated, `|` = space in the
-transcription field, `status=err` rows are skipped).
+`load_dataset()` parses `lines.txt` directly (space-separated, `|` = space in the transcription field, `status=err` rows are skipped).
 
 # Setup
 
@@ -43,7 +53,7 @@ loss, and saves the best checkpoint (lowest validation CER) to
 python -m src.inference.pipeline path/to/document.jpg
 ```
 
-Outputs `output.txt` (recognized text) and `annotated.png` (detected line boxes).
+Outputs transcription to `outputs/predictions/<name>_transcription.txt` and annotated visualization to `outputs/visualizations/<name>_annotated.png`.
 
 # Evaluate
 

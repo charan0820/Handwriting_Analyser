@@ -6,7 +6,10 @@ def find_line_boundaries(image: np.ndarray, min_gap=4, min_height=8) -> list[tup
     """image: grayscale np.ndarray (H,W), ink=dark on light background.
     Returns list of (y_start, y_end) row ranges, one per text line."""
     gray = image if image.ndim == 2 else image.mean(axis=2)
-    ink = 255 - gray  # high value = ink
+    if np.issubdtype(gray.dtype, np.floating) and gray.max() <= 1.0:
+        ink = 1.0 - gray
+    else:
+        ink = 255 - gray  # high value = ink
     row_density = ink.sum(axis=1)
     threshold = row_density.max() * 0.05 if row_density.max() > 0 else 0
 
@@ -23,7 +26,7 @@ def find_line_boundaries(image: np.ndarray, min_gap=4, min_height=8) -> list[tup
             if start is not None:
                 gap += 1
                 if gap > min_gap:
-                    end = y - gap
+                    end = y - gap + 1
                     if end - start >= min_height:
                         boundaries.append((start, end))
                     start = None

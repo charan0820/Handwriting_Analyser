@@ -49,7 +49,7 @@ def collate_fn(batch):
     return x, targets_cat, target_lengths
 
 
-def train_model(model, train_loader, val_loader, config: dict) -> dict:
+def train_model(model, train_loader, val_loader, config: dict, resume_from: str = None) -> dict:
     """Locked interface. Returns history; saves best checkpoint to config['training']['checkpoint_dir']."""
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
@@ -62,10 +62,20 @@ def train_model(model, train_loader, val_loader, config: dict) -> dict:
 
     best_val_cer = float("inf")
     epochs_no_improve = 0
+    start_epoch = 0
     history = {"train_loss": [], "val_loss": [], "val_cer": []}
+
+    resume_path = resume_from or config["training"].get("resume_from")
+    if resume_path and os.path.exists(resume_path):
+        ckpt = torch.load(resume_path, map_location=device)
+        model.load_state_dict(ckpt["model_state"])
+        start_epoch = ckpt.get("epoch", -1) + 1
+        best_val_cer = ckpt.get("val_cer", float("inf"))
+        print(f"[+] Resumed from checkpoint '{resume_path}': starting at epoch {start_epoch} (best val_cer so far: {best_val_cer:.4f})")
+
     charset = load_charset()
 
-    for epoch in range(config["training"]["epochs"]):
+    for epoch in range(start_epoch, config["training"]["epochs"]):
         model.train()
         total_loss = 0.0
         for x, targets, target_lengths in train_loader:
@@ -129,6 +139,12 @@ def _validate(model, val_loader, charset, device):
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Train CRNN handwriting recognition model.")
+    parser.add_argument("--resume", nargs="?", const="models/best_model.pth", default=None,
+                        help="Resume training from checkpoint (default: models/best_model.pth)")
+    args = parser.parse_args()
+
     with open("config.yaml") as f:
         config = yaml.safe_load(f)
     charset = load_charset()
@@ -143,4 +159,4 @@ if __name__ == "__main__":
     val_loader = DataLoader(val_ds, batch_size=config["training"]["batch_size"], collate_fn=collate_fn)
 
     model = build_crnn(num_classes)
-    train_model(model, train_loader, val_loader, config)
+    train_model(model, train_loader, val_loader, config, resume_from=args.resume)

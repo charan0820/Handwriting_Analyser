@@ -1,8 +1,6 @@
 dataset:
   name: iam
   raw_path: data/raw
-  processed_path: data/processed
-  splits_path: data/splits
   split_ratio: [0.8, 0.1, 0.1]
   split_strategy: writer_disjoint   # no writer appears in more than one split
 
