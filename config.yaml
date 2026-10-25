@@ -2,7 +2,7 @@ dataset:
   name: iam
   raw_path: data/raw
   split_ratio: [0.8, 0.1, 0.1]
-  split_strategy: writer_disjoint   # no writer appears in more than one split
+  split_strategy: source_partitions # preserve downloaded train/validation/test; writer IDs are not available
 
 image:
   width: 256

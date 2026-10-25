@@ -20,8 +20,11 @@ def load_model(checkpoint_path: str, charset_path="charset.json"):
     with open(charset_path) as f:
         charset = json.load(f)
     num_classes = len(charset["chars"]) + 1
-    model = build_crnn(num_classes)
-    ckpt = torch.load(checkpoint_path, map_location="cpu")
+    ckpt = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+    charset = ckpt.get('charset', charset)
+    num_classes = len(charset['chars']) + 1
+    config = ckpt.get('config', {}).get('model', {})
+    model = build_crnn(num_classes, cnn_channels=config.get('cnn_channels'), hidden_size=config.get('lstm_hidden_size',256))
     model.load_state_dict(ckpt["model_state"])
     model.eval()
     return model, charset

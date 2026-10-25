@@ -1,0 +1,2 @@
+-r requirements.txt
+kraken==6.0.0

@@ -1,14 +1,72 @@
+# Python environments and caches
 __pycache__/
-*.pyc
+*.py[cod]
+.venv*/
+/venv/
+/env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+
+# Local secrets (keep shareable configuration templates)
 .env
-data/raw/*
-data/processed/*
-data/splits/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/splits/.gitkeep
-models/*.pth
-outputs/predictions/*
-outputs/visualizations/*
-!outputs/predictions/.gitkeep
-!outputs/visualizations/.gitkeep
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+
+# Downloaded datasets and generated splits
+/data/raw/*
+/data/processed/*
+/data/splits/*
+!/data/raw/.gitkeep
+!/data/processed/.gitkeep
+!/data/splits/.gitkeep
+
+# Trained checkpoints and downloaded model bundles
+/models/*
+!/models/.gitkeep
+!/models/README.md
+
+# Local documents, databases, and inference/evaluation artifacts
+/.local/
+/outputs/*
+!/outputs/.gitkeep
+!/outputs/README.md
+!/outputs/predictions/
+/outputs/predictions/*
+!/outputs/predictions/.gitkeep
+!/outputs/visualizations/
+/outputs/visualizations/*
+!/outputs/visualizations/.gitkeep
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.log
+
+# Frontend dependencies and build/test output (keep package lockfiles)
+node_modules/
+/frontend/dist/
+/frontend/.vite/
+/frontend/coverage/
+/frontend/playwright-report/
+/frontend/test-results/
+*.tsbuildinfo
+
+# Generated design captures; retain design tokens, briefs, and review notes
+/.impeccable/review/*.png
+/.impeccable/review/*.jpg
+/.impeccable/review/*.jpeg
+/.impeccable/review/*.webp
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

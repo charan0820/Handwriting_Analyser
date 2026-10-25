@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "name": "Handwriting Analyser",
+  "colors": {"background":"#f8f9fc","surface":"#ffffff","text":"#202b3d","muted":"#637087","accent":"#355ce7","border":"#dce2eb"},
+  "typography": {"family":"Source Sans 3","weights":[400,500,600,700]},
+  "radii": {"control":"7px","panel":"12px"},
+  "motion": {"transition":"180ms","reducedMotion":true},
+  "surfaces": {"landing":"persuade","studio":"operate"}
+}

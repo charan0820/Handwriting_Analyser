@@ -5,7 +5,7 @@ import torch
 import yaml
 from torch.utils.data import Dataset, DataLoader
 
-from src.data.dataset import load_dataset, writer_disjoint_split
+from src.data.dataset import load_dataset, writer_disjoint_split, source_dataset_split, verified_writer_split
 from src.data.preprocessing import preprocess_image
 from src.models.crnn import build_crnn
 from src.training.losses import ctc_loss
@@ -20,7 +20,10 @@ def load_charset(path="charset.json"):
 
 def text_to_indices(text: str, charset: dict) -> list[int]:
     char_to_idx = {c: i + 1 for i, c in enumerate(charset["chars"])}  # 0 reserved for blank
-    return [char_to_idx[c] for c in text if c in char_to_idx]
+    unsupported = set(text) - set(char_to_idx)
+    if unsupported:
+        raise ValueError(f'Unsupported training characters: {sorted(unsupported)!r}. Update the vocabulary explicitly.')
+    return [char_to_idx[c] for c in text]
 
 
 class HandwritingDataset(Dataset):
@@ -38,6 +41,9 @@ class HandwritingDataset(Dataset):
         arr = preprocess_image(img)  # (H,W,1)
         x = torch.from_numpy(arr).permute(2, 0, 1)  # (1,H,W)
         target = torch.tensor(text_to_indices(self.texts[idx], self.charset), dtype=torch.long)
+        required = len(target) + sum(a == b for a,b in zip(target.tolist(),target.tolist()[1:]))
+        if required > 63:
+            raise ValueError(f'Impossible CTC target in {self.paths[idx]}: needs {required} timesteps, fixed baseline has 63. Run scripts/audit_dataset.py.')
         return x, target
 
 
@@ -103,6 +109,7 @@ def train_model(model, train_loader, val_loader, config: dict, resume_from: str 
                 "config": config,
                 "epoch": epoch,
                 "val_cer": val_cer,
+                "charset": charset,
             }, os.path.join(ckpt_dir, "best_model.pth"))
         else:
             epochs_no_improve += 1
@@ -151,7 +158,12 @@ if __name__ == "__main__":
     num_classes = len(charset["chars"]) + 1
 
     paths, texts = load_dataset(config["dataset"]["raw_path"])
-    (tr_p, tr_t), (va_p, va_t), _ = writer_disjoint_split(paths, texts, config["dataset"]["split_ratio"])
+    if config['dataset'].get('split_strategy') == 'verified_writer':
+        with open(config['dataset']['writer_metadata'], encoding='utf-8') as f:
+            writers = json.load(f)
+        (tr_p,tr_t),(va_p,va_t),_ = verified_writer_split(paths,texts,writers,config['dataset']['split_ratio'])
+    else:
+        (tr_p,tr_t),(va_p,va_t),_ = source_dataset_split(paths,texts)
 
     train_ds = HandwritingDataset(tr_p, tr_t, charset)
     val_ds = HandwritingDataset(va_p, va_t, charset)
